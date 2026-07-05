@@ -6,5 +6,31 @@ use Illuminate\Database\Eloquent\Model;
 
 class TeacherSubject extends Model
 {
-    //
+    protected $fillable = [
+        'teacher_id',
+        'class_id',
+        'section_id',
+        'subject_id',
+    ];
+
+    public function teacher()
+    {
+        return $this->belongsTo(Teacher::class);
+    }
+
+    public function class()
+    {
+        return $this->belongsTo(StudentClass::class, 'class_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
 }
+
