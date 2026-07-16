@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class MarksController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $teacher = Auth::user()->teacher;
 
@@ -21,33 +21,28 @@ class MarksController extends Controller
             ->pluck('subject_id')
             ->unique();
 
+        $exam = null;
+        $students = collect();
+        $existingMarks = collect();
+
+        if ($request->filled('exam_id') && $request->filled('subject_id')) {
+            $exam = Exam::findOrFail($request->exam_id);
+
+            $students = Student::where('class_id', $exam->class_id)
+                ->orderBy('roll_no')
+                ->get();
+
+            $existingMarks = ExamMark::where('exam_id', $exam->id)
+                ->where('subject_id', $request->subject_id)
+                ->get()
+                ->keyBy('student_id');
+        }
+
         return view('teacher.marks.index', [
             'exams' => Exam::latest()->get(),
             'subjects' => Subject::whereIn('id', $subjectIds)->get(),
-        ]);
-    }
-
-    public function create(Request $request)
-    {
-        $request->validate([
-            'exam_id' => ['required', 'exists:exams,id'],
-            'subject_id' => ['required', 'exists:subjects,id'],
-        ]);
-
-        $exam = Exam::findOrFail($request->exam_id);
-
-        $students = Student::where('class_id', $exam->class_id)
-            ->orderBy('roll_no')
-            ->get();
-
-        $existingMarks = ExamMark::where('exam_id', $exam->id)
-            ->where('subject_id', $request->subject_id)
-            ->get()
-            ->keyBy('student_id');
-
-        return view('teacher.marks.create', [
             'exam' => $exam,
-            'subject_id' => $request->subject_id,
+            'selectedSubjectId' => $request->get('subject_id'),
             'students' => $students,
             'existingMarks' => $existingMarks,
         ]);
@@ -80,6 +75,9 @@ class MarksController extends Controller
             );
         }
 
-        return back()->with('success', 'Marks saved.');
+        return redirect()->route('teacher.marks.index', [
+            'exam_id' => $data['exam_id'],
+            'subject_id' => $data['subject_id'],
+        ])->with('success', 'Marks saved.');
     }
 }

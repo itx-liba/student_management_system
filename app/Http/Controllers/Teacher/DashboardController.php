@@ -11,10 +11,11 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     public function index()
-    {
-        $teacher = Auth::user()->teacher;
+{
 
-        $todayTimetable = Timetable::with(['subject', 'class', 'section'])
+    $teacher = Auth::user()->teacher;
+
+    $todayTimetable = Timetable::with(['subject', 'class', 'section'])
             ->where('teacher_id', $teacher->id)
             ->where('day_name', now()->format('l'))
             ->orderBy('start_time')

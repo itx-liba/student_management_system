@@ -11,11 +11,12 @@ use Illuminate\Http\Request;
 class StaffAttendanceController extends Controller
 {
     public function index()
-    {
-        return view('admin.staff-attendance.index', [
-            'rows' => StaffAttendance::latest()->paginate(15),
-        ]);
-    }
+{
+    return view('admin.staff-attendance.index', [
+        'rows' => StaffAttendance::with('teacher.user')->latest()->paginate(15),
+        'teachers' => Teacher::with('user')->get(),
+    ]);
+}
 
     public function create()
     {

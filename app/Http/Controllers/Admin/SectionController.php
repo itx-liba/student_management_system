@@ -13,6 +13,7 @@ class SectionController extends Controller
     {
         return view('admin.sections.index', [
             'sections' => Section::with('class')->latest()->paginate(15),
+            'classes' => StudentClass::orderBy('name')->get(),
         ]);
     }
 

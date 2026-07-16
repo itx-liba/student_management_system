@@ -14,38 +14,33 @@ class ResultController extends Controller
     {
         $student = Auth::user()->student;
 
-        return view('student.results.index', [
-            'exams' => Exam::where('class_id', $student->class_id)
-                ->where('is_published', true)
-                ->latest()
-                ->get(),
-        ]);
-    }
-
-    public function show(Exam $exam)
-    {
-        $student = Auth::user()->student;
-
-        abort_unless($exam->class_id === $student->class_id && $exam->is_published, 403);
-
-        $marks = ExamMark::with('subject')
-            ->where('exam_id', $exam->id)
-            ->where('student_id', $student->id)
+        $exams = Exam::where('class_id', $student->class_id)
+            ->where('is_published', true)
+            ->latest()
             ->get();
 
-        $totalObtained = $marks->sum('obtained_marks');
-        $totalMax = $marks->sum('total_marks');
-        $percentage = $totalMax ? round(($totalObtained / $totalMax) * 100, 2) : 0;
+        $results = $exams->map(function ($exam) use ($student) {
+            $marks = ExamMark::with('subject')
+                ->where('exam_id', $exam->id)
+                ->where('student_id', $student->id)
+                ->get();
 
-        $grade = GradeRule::where('min_percentage', '<=', $percentage)
-            ->where('max_percentage', '>=', $percentage)
-            ->first();
+            $totalObtained = $marks->sum('obtained_marks');
+            $totalMax = $marks->sum('total_marks');
+            $percentage = $totalMax ? round(($totalObtained / $totalMax) * 100, 2) : 0;
 
-        return view('student.results.show', [
-            'exam' => $exam,
-            'marks' => $marks,
-            'percentage' => $percentage,
-            'grade' => $grade,
-        ]);
+            $grade = GradeRule::where('min_percentage', '<=', $percentage)
+                ->where('max_percentage', '>=', $percentage)
+                ->first();
+
+            return [
+                'exam' => $exam,
+                'marks' => $marks,
+                'percentage' => $percentage,
+                'grade' => $grade,
+            ];
+        });
+
+        return view('student.results.index', compact('results'));
     }
 }

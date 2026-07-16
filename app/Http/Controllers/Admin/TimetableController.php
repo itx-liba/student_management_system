@@ -13,11 +13,15 @@ use Illuminate\Http\Request;
 class TimetableController extends Controller
 {
     public function index()
-    {
-        return view('admin.timetables.index', [
-            'timetables' => Timetable::latest()->paginate(15),
-        ]);
-    }
+{
+    return view('admin.timetables.index', [
+        'timetables' => Timetable::with(['class', 'section', 'subject', 'teacher.user'])->latest()->paginate(15),
+        'classes' => StudentClass::orderBy('name')->get(),
+        'sections' => Section::orderBy('name')->get(),
+        'subjects' => Subject::orderBy('name')->get(),
+        'teachers' => Teacher::with('user')->get(),
+    ]);
+}
 
     public function create()
     {

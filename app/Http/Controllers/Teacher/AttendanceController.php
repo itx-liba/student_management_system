@@ -11,34 +11,39 @@ use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $teacher = Auth::user()->teacher;
 
-        $classSections = Timetable::where('teacher_id', $teacher->id)
+        $classSections = Timetable::with(['class', 'section'])
+            ->where('teacher_id', $teacher->id)
             ->get(['class_id', 'section_id'])
             ->unique(fn ($row) => $row->class_id . '-' . $row->section_id)
             ->values();
 
-        return view('teacher.attendance.index', compact('classSections'));
-    }
+        $students = null;
+        $existingAttendance = collect();
+        $date = $request->get('attendance_date', now()->toDateString());
 
-    public function create(Request $request)
-    {
-        $request->validate([
-            'class_id' => ['required', 'exists:classes,id'],
-            'section_id' => ['required', 'exists:sections,id'],
-        ]);
+        if ($request->filled('class_id') && $request->filled('section_id')) {
+            $students = Student::where('class_id', $request->class_id)
+                ->where('section_id', $request->section_id)
+                ->orderBy('roll_no')
+                ->get();
 
-        $students = Student::where('class_id', $request->class_id)
-            ->where('section_id', $request->section_id)
-            ->orderBy('roll_no')
-            ->get();
+            $existingAttendance = StudentAttendance::whereIn('student_id', $students->pluck('id'))
+                ->whereDate('attendance_date', $date)
+                ->get()
+                ->keyBy('student_id');
+        }
 
-        return view('teacher.attendance.create', [
+        return view('teacher.attendance.index', [
+            'classSections' => $classSections,
             'students' => $students,
-            'class_id' => $request->class_id,
-            'section_id' => $request->section_id,
+            'existingAttendance' => $existingAttendance,
+            'selectedClassId' => $request->get('class_id'),
+            'selectedSectionId' => $request->get('section_id'),
+            'date' => $date,
         ]);
     }
 
@@ -46,6 +51,8 @@ class AttendanceController extends Controller
     {
         $data = $request->validate([
             'attendance_date' => ['required', 'date'],
+            'class_id' => ['required', 'exists:classes,id'],
+            'section_id' => ['required', 'exists:sections,id'],
             'students' => ['required', 'array'],
             'students.*.student_id' => ['required', 'exists:students,id'],
             'students.*.status' => ['required', 'in:present,absent,late,leave'],
@@ -58,11 +65,18 @@ class AttendanceController extends Controller
                     'attendance_date' => $data['attendance_date'],
                 ],
                 [
+                    'class_id' => $data['class_id'],
+                    'section_id' => $data['section_id'],
                     'status' => $row['status'],
+                    'marked_by' => Auth::id(),
                 ]
             );
         }
 
-        return redirect()->route('teacher.attendance.index')->with('success', 'Attendance saved.');
+        return redirect()->route('teacher.attendance.index', [
+            'class_id' => $data['class_id'],
+            'section_id' => $data['section_id'],
+            'attendance_date' => $data['attendance_date'],
+        ])->with('success', 'Attendance saved.');
     }
 }

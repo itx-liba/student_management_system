@@ -49,4 +49,9 @@ class AdmissionApplicationController extends Controller
         $admission->delete();
         return redirect()->route('admin.admissions.index')->with('success', 'Application deleted.');
     }
+
+    public function desiredClass()
+{
+    return $this->belongsTo(StudentClass::class, 'desired_class_id');
+}
 }

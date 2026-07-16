@@ -14,11 +14,13 @@ use Illuminate\Support\Facades\Hash;
 class StudentController extends Controller
 {
     public function index()
-    {
-        return view('admin.students.index', [
-            'students' => Student::with(['class', 'section'])->latest()->paginate(15),
-        ]);
-    }
+{
+    return view('admin.students.index', [
+        'students' => Student::with(['class', 'section'])->latest()->paginate(15),
+        'classes' => StudentClass::orderBy('name')->get(),
+        'sections' => Section::orderBy('name')->get(),
+    ]);
+}
 
     public function create()
     {

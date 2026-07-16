@@ -47,9 +47,9 @@ class ReportController extends Controller
     }
 
     public function tasks()
-    {
-        return view('admin.reports.tasks', [
-            'tasks' => TeacherTask::latest()->paginate(30),
-        ]);
-    }
+{
+    return view('admin.reports.tasks', [
+        'tasks' => TeacherTask::with('teacher.user')->latest()->paginate(30),
+    ]);
+}
 }

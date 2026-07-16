@@ -11,11 +11,13 @@ use Illuminate\Http\Request;
 class NoticeController extends Controller
 {
     public function index()
-    {
-        return view('admin.notices.index', [
-            'notices' => Notice::latest()->paginate(15),
-        ]);
-    }
+{
+    return view('admin.notices.index', [
+        'notices' => Notice::latest()->paginate(15),
+        'classes' => StudentClass::orderBy('name')->get(),
+        'sections' => Section::orderBy('name')->get(),
+    ]);
+}
 
     public function create()
     {

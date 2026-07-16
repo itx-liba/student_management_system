@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\Auth;
 class NoticeController extends Controller
 {
     public function index()
-    {
-        return view('teacher.notices.index', [
-            'notices' => Notice::latest()->paginate(15),
-        ]);
-    }
+{
+    return view('teacher.notices.index', [
+        'notices' => Notice::latest()->paginate(15),
+        'classes' => StudentClass::orderBy('name')->get(),
+        'sections' => Section::orderBy('name')->get(),
+    ]);
+}
 
     public function create()
     {

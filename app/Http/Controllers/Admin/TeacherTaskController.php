@@ -9,12 +9,13 @@ use Illuminate\Http\Request;
 
 class TeacherTaskController extends Controller
 {
-    public function index()
-    {
-        return view('admin.teacher-tasks.index', [
-            'tasks' => TeacherTask::latest()->paginate(15),
-        ]);
-    }
+   public function index()
+{
+    return view('admin.teacher-tasks.index', [
+        'tasks' => TeacherTask::with('teacher.user')->latest()->paginate(15),
+        'teachers' => Teacher::with('user')->get(),
+    ]);
+}
 
     public function create()
     {

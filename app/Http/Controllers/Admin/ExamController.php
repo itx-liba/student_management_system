@@ -12,12 +12,13 @@ use Illuminate\Http\Request;
 
 class ExamController extends Controller
 {
-    public function index()
-    {
-        return view('admin.exams.index', [
-            'exams' => Exam::latest()->paginate(15),
-        ]);
-    }
+   public function index()
+{
+    return view('admin.exams.index', [
+        'exams' => Exam::with('class')->latest()->paginate(15),
+        'classes' => StudentClass::orderBy('name')->get(),
+    ]);
+}
 
     public function create()
     {

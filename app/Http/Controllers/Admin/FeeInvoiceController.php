@@ -10,11 +10,12 @@ use Illuminate\Http\Request;
 class FeeInvoiceController extends Controller
 {
     public function index()
-    {
-        return view('admin.fee-invoices.index', [
-            'feeInvoices' => FeeInvoice::with('student')->latest()->paginate(15),
-        ]);
-    }
+{
+    return view('admin.fees.index', [
+        'invoices' => FeeInvoice::with('student')->latest()->paginate(15),
+        'students' => Student::orderBy('name')->get(),
+    ]);
+}
 
     public function create()
     {

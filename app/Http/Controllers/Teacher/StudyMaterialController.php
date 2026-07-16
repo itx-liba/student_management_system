@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Section;
 use App\Models\StudentClass;
 use App\Models\StudyMaterial;
 use App\Models\Subject;
@@ -13,72 +14,73 @@ class StudyMaterialController extends Controller
 {
     public function index()
     {
-        $teacher = Auth::user()->teacher;
-
-        return view('teacher.study-materials.index', [
-            'materials' => StudyMaterial::where('teacher_id', $teacher->id)
+        return view('teacher.materials.index', [
+            'materials' => StudyMaterial::where('uploaded_by', Auth::id())
                 ->latest()
                 ->paginate(15),
+            'classes' => StudentClass::orderBy('name')->get(),
+            'sections' => Section::orderBy('name')->get(),
+            'subjects' => Subject::orderBy('name')->get(),
         ]);
     }
 
     public function create()
     {
-        return view('teacher.study-materials.create', [
+        return view('teacher.materials.create', [
             'classes' => StudentClass::orderBy('name')->get(),
+            'sections' => Section::orderBy('name')->get(),
             'subjects' => Subject::orderBy('name')->get(),
         ]);
     }
 
     public function store(Request $request)
     {
-        $teacher = Auth::user()->teacher;
-
         $data = $request->validate([
             'class_id' => ['required', 'exists:classes,id'],
+            'section_id' => ['required', 'exists:sections,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'title' => ['required', 'max:200'],
-            'description' => ['nullable'],
             'file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,ppt,pptx', 'max:10240'],
         ]);
 
         StudyMaterial::create([
-            'teacher_id' => $teacher->id,
             'class_id' => $data['class_id'],
+            'section_id' => $data['section_id'],
             'subject_id' => $data['subject_id'],
+            'uploaded_by' => Auth::id(),
             'title' => $data['title'],
-            'description' => $data['description'] ?? null,
             'file_path' => $request->file('file')->store('study-materials', 'public'),
         ]);
 
-        return redirect()->route('teacher.study-materials.index')->with('success', 'Study material uploaded.');
+        return redirect()->route('teacher.materials.index')->with('success', 'Study material uploaded.');
     }
 
-    public function show(StudyMaterial $studyMaterial)
+    public function show(StudyMaterial $material)
     {
-        return view('teacher.study-materials.show', compact('studyMaterial'));
+        return view('teacher.materials.show', compact('material'));
     }
 
-    public function edit(StudyMaterial $studyMaterial)
+    public function edit(StudyMaterial $material)
     {
-        abort_unless($studyMaterial->teacher_id === Auth::user()->teacher->id, 403);
+        abort_unless($material->uploaded_by === Auth::id(), 403);
 
-        return view('teacher.study-materials.edit', [
-            'studyMaterial' => $studyMaterial,
+        return view('teacher.materials.edit', [
+            'material' => $material,
             'classes' => StudentClass::orderBy('name')->get(),
+            'sections' => Section::orderBy('name')->get(),
             'subjects' => Subject::orderBy('name')->get(),
         ]);
     }
 
-    public function update(Request $request, StudyMaterial $studyMaterial)
+    public function update(Request $request, StudyMaterial $material)
     {
-        abort_unless($studyMaterial->teacher_id === Auth::user()->teacher->id, 403);
+        abort_unless($material->uploaded_by === Auth::id(), 403);
 
         $data = $request->validate([
             'class_id' => ['required', 'exists:classes,id'],
+            'section_id' => ['required', 'exists:sections,id'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'title' => ['required', 'max:200'],
-            'description' => ['nullable'],
             'file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,ppt,pptx', 'max:10240'],
         ]);
 
@@ -86,17 +88,17 @@ class StudyMaterialController extends Controller
             $data['file_path'] = $request->file('file')->store('study-materials', 'public');
         }
 
-        $studyMaterial->update($data);
+        $material->update($data);
 
-        return redirect()->route('teacher.study-materials.index')->with('success', 'Study material updated.');
+        return redirect()->route('teacher.materials.index')->with('success', 'Study material updated.');
     }
 
-    public function destroy(StudyMaterial $studyMaterial)
+    public function destroy(StudyMaterial $material)
     {
-        abort_unless($studyMaterial->teacher_id === Auth::user()->teacher->id, 403);
+        abort_unless($material->uploaded_by === Auth::id(), 403);
 
-        $studyMaterial->delete();
+        $material->delete();
 
-        return redirect()->route('teacher.study-materials.index')->with('success', 'Study material deleted.');
+        return redirect()->route('teacher.materials.index')->with('success', 'Study material deleted.');
     }
 }
