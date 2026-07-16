@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Teacher;
+use App\Models\Student;
 
 class User extends Authenticatable
 {
@@ -22,5 +24,15 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function teacher()
+{
+    return $this->hasOne(Teacher::class);
+}
+
+public function student()
+{
+    return $this->hasOne(Student::class);
+}
 }
 
