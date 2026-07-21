@@ -10,18 +10,21 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('notices', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('notices', function (Blueprint $table) {
+        $table->id();
+        $table->string('title');
+        $table->text('body');
+        $table->string('audience');
+        $table->foreignId('class_id')->nullable()->constrained('classes')->nullOnDelete();
+        $table->foreignId('section_id')->nullable()->constrained('sections')->nullOnDelete();
+        $table->foreignId('published_by')->nullable()->constrained('users')->nullOnDelete();
+        $table->timestamps();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('notices');
-    }
+public function down(): void
+{
+    Schema::dropIfExists('notices');
+}
 };

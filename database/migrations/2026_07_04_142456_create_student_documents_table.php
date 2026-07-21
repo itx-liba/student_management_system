@@ -10,18 +10,18 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('student_documents', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('student_documents', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
+        $table->string('document_type');
+        $table->string('file_path');
+        $table->timestamps();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('student_documents');
-    }
+public function down(): void
+{
+    Schema::dropIfExists('student_documents');
+}
 };

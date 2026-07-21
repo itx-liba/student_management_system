@@ -10,18 +10,30 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('students', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+        $table->foreignId('class_id')->constrained('classes')->cascadeOnDelete();
+        $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
+        $table->string('roll_no');
+        $table->string('name');
+        $table->string('father_name');
+        $table->string('b_form')->nullable();
+        $table->string('phone')->nullable();
+        $table->string('parent_phone')->nullable();
+        $table->text('address')->nullable();
+        $table->enum('gender', ['male', 'female', 'other'])->nullable();
+        $table->date('date_of_birth')->nullable();
+        $table->date('admission_date')->nullable();
+        $table->string('photo')->nullable();
+        $table->string('status')->default('active');
+        $table->timestamps();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('students');
-    }
+public function down(): void
+{
+    Schema::dropIfExists('students');
+}
 };

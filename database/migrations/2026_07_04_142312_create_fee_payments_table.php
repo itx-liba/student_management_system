@@ -10,18 +10,20 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('fee_payments', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('fee_payments', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('fee_invoice_id')->constrained('fee_invoices')->cascadeOnDelete();
+        $table->date('payment_date');
+        $table->decimal('amount', 10, 2);
+        $table->string('payment_method');
+        $table->foreignId('received_by')->nullable()->constrained('users')->nullOnDelete();
+        $table->timestamps();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('fee_payments');
-    }
+public function down(): void
+{
+    Schema::dropIfExists('fee_payments');
+}
 };

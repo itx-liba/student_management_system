@@ -10,18 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('timetables', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('timetables', function (Blueprint $table) {
+        $table->id();
+        $table->foreignId('class_id')->constrained('classes')->cascadeOnDelete();
+        $table->foreignId('section_id')->constrained('sections')->cascadeOnDelete();
+        $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();
+        $table->foreignId('teacher_id')->constrained('teachers')->cascadeOnDelete();
+        $table->string('day_name');
+        $table->time('start_time');
+        $table->time('end_time');
+        $table->timestamps();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('timetables');
-    }
+public function down(): void
+{
+    Schema::dropIfExists('timetables');
+}
 };

@@ -10,18 +10,20 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('exams', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
-    }
+{
+    Schema::create('exams', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->foreignId('class_id')->constrained('classes')->cascadeOnDelete();
+        $table->date('start_date')->nullable();
+        $table->date('end_date')->nullable();
+        $table->boolean('is_published')->default(false);
+        $table->timestamps();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('exams');
-    }
+public function down(): void
+{
+    Schema::dropIfExists('exams');
+}
 };
